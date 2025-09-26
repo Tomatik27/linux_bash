@@ -8,6 +8,8 @@ int main() {
   std::cout << "$ ";
 
   std::string input;
-  std::getline(std::cin, input);
-  std::cout << input << std::endl;
+  while (std::getline(std::cin, input)) {
+    std::cout << input << std::endl;
+  }
+  return 0;
 }
