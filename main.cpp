@@ -1,15 +1,20 @@
 #include <iostream>
 #include <string>
 
+using namespace std;
+
 int main() {
-  std::cout << std::unitbuf;
-  std::cerr << std::unitbuf;
+  cout << unitbuf;
+  cerr << unitbuf;
 
-  std::cout << "$ ";
+  cout << "$ ";
 
-  std::string input;
-  while (std::getline(std::cin, input)) {
-    std::cout << input << std::endl;
+  string input;
+  while (getline(cin, input)) {
+    cout << input << endl;
+    cout << "$ ";
+    if (input == "\\q")
+      break;
   }
   return 0;
 }
