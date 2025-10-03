@@ -19,16 +19,21 @@ int main() {
     F << '$' << input << '\n';
     F.flush();
     
-    cout << input << endl;
-    cout << "$ ";
+    // cout << input << endl;
     
     if (input == "\\q")
-      break;
+    break;
     
-      if (input.empty())
-      continue;
-
-
+    if (input.empty())
+    continue;
+    
+    if (input.find("echo") != -1)
+    {
+      cout << input.substr(input.find("echo")+6, input.find_last_of('"')-1) << '\n';
+    }
+    
+    cout << "$ ";
+    
   }
   return 0;
 }
