@@ -1,6 +1,8 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <vector>
+#include <cstdlib>
 
 using namespace std;
 
@@ -19,8 +21,6 @@ int main() {
     F << '$' << input << '\n';
     F.flush();
     
-    // cout << input << endl;
-    
     if (input == "\\q")
     break;
     
@@ -28,12 +28,50 @@ int main() {
     continue;
     
     if (input.find("echo") != -1)
+      cout << input.substr(input.find("echo")+5, input.length()) << '\n';
+
+    else if (input.find("\\e") != -1)
     {
-      cout << input.substr(input.find("echo")+6, input.find_last_of('"')-1) << '\n';
+      size_t pos = input.find("\\e") + 3;
+
+      if (pos < input.length()) 
+      {
+        string var_name = input.substr(pos);
+        
+        if (!var_name.empty() && var_name[0] == '$') 
+          var_name = var_name.substr(1);
+        
+        const char* env_value = getenv(var_name.c_str());
+        if (env_value != nullptr) 
+        {
+          string value = env_value;
+          size_t start = 0;
+          size_t end = value.find(':');
+        
+          while (end != string::npos) 
+          {
+            cout << value.substr(start, end - start) << '\n';
+            start = end + 1;
+            end = value.find(':', start);
+          }
+
+          cout << value.substr(start) << '\n';
+        }
+         else
+          cout << "Environment variable '" << var_name << "' not found" << '\n';
+
+        } 
+
+      else cout << "Usage: \\e $VARIABLE" << '\n';
+
     }
     
-    cout << "$ ";
+    else cout << input << ": command not found" << '\n';
     
+    cout << "$ ";
+
   }
+
   return 0;
+
 }
