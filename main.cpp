@@ -3,6 +3,9 @@
 #include <string>
 #include <vector>
 #include <cstdlib>
+#include <unistd.h>
+#include <sys/wait.h>
+#include <sstream>
 
 using namespace std;
 
@@ -27,12 +30,15 @@ int main() {
     if (input.empty())
     continue;
     
-    if (input.find("echo") != -1)
-      cout << input.substr(input.find("echo")+5, input.length()) << '\n';
-
-    else if (input.find("\\e") != -1)
+    // Проверяем команду echo (должна быть в начале строки)
+    if (input.find("echo") == 0)
     {
-      size_t pos = input.find("\\e") + 3;
+      cout << input.substr(5) << '\n';
+    }
+    // Проверяем команду \e (должна быть в начале строки)
+    else if (input.find("\\e") == 0)
+    {
+      size_t pos = 3; // пропускаем "\e "
 
       if (pos < input.length()) 
       {
@@ -66,10 +72,52 @@ int main() {
 
     }
     
-    else cout << input << ": command not found" << '\n';
+    else {
+      // Попытка выполнить бинарный файл из PATH
+      pid_t pid = fork();
+      
+      if (pid == 0) {
+        // Дочерний процесс
+        vector<char*> args;
+        stringstream ss(input);
+        string token;
+        
+        // Разбиваем команду на аргументы
+        while (ss >> token) {
+          char* arg = new char[token.size() + 1];
+          copy(token.begin(), token.end(), arg);
+          arg[token.size()] = '\0';
+          args.push_back(arg);
+        }
+        
+        // Завершаем список аргументов NULL
+        args.push_back(nullptr);
+        
+        // Выполняем команду
+        execvp(args[0], args.data());
+        
+        // Если execvp вернул управление, значит произошла ошибка
+        cerr << input << ": command not found" << '\n';
+        
+        // Освобождаем память
+        for (char* arg : args) {
+          delete[] arg;
+        }
+        exit(1);
+      }
+      else if (pid > 0) {
+        // Родительский процесс ждет завершения дочернего
+        int status;
+        waitpid(pid, &status, 0);
+      }
+      else {
+        cerr << "Failed to fork process" << '\n';
+      }
+    }
     
     cout << "$ ";
 
   }
-
+  cout << "\n";
+  return 0;
 }
