@@ -8,6 +8,7 @@
 #include <sstream>
 #include <csignal>
 #include <cstring>
+#include <sys/stat.h>
 
 using namespace std;
 
@@ -27,7 +28,7 @@ int main() {
     struct sigaction sa;
     memset(&sa, 0, sizeof(sa));
     sa.sa_handler = sighup_handler;
-    sa.sa_flags = SA_RESTART; // Важно: перезапускать системные вызовы после сигнала
+    sa.sa_flags = SA_RESTART;
     sigaction(SIGHUP, &sa, NULL);
 
     string hist = "kubsh_history.txt";
@@ -43,7 +44,7 @@ int main() {
             cout << "Configuration reloaded" << endl;
             got_sighup = 0;
             cout << "$ ";
-            continue; // Переходим к следующей итерации
+            continue;
         }
 
         F << '$' << input << '\n';
@@ -91,6 +92,43 @@ int main() {
 
             } 
             else cout << "Usage: \\e $VARIABLE" << '\n';
+        }
+        else if (input.find("\\l") == 0)
+        {
+            // Обработка команды \l для получения информации о разделах диска
+            string device_path;
+            size_t pos = input.find("\\l") + 3;
+            
+            if (pos < input.length()) {
+                device_path = input.substr(pos);
+                
+                // Проверяем существование устройства
+                struct stat buffer;
+                if (stat(device_path.c_str(), &buffer) == 0) {
+                    // Формируем команду для получения информации о разделах
+                    string command = "sudo fdisk -l " + device_path + " 2>/dev/null || sudo lsblk " + device_path + " 2>/dev/null || echo 'Cannot get partition information for " + device_path + "'";
+                    
+                    // Выполняем команду
+                    pid_t pid = fork();
+                    
+                    if (pid == 0) {
+                        execl("/bin/sh", "sh", "-c", command.c_str(), NULL);
+                        cerr << "Failed to execute command" << '\n';
+                        exit(1);
+                    }
+                    else if (pid > 0) {
+                        int status;
+                        waitpid(pid, &status, 0);
+                    }
+                    else {
+                        cerr << "Failed to fork process" << '\n';
+                    }
+                } else {
+                    cout << "Device '" << device_path << "' not found or no permission" << '\n';
+                }
+            } else {
+                cout << "Usage: \\l /dev/device" << '\n';
+            }
         }
         else {
             pid_t pid = fork();
