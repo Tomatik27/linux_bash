@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -std=c++11 -Wall -Wextra -O2
+CXXFLAGS = -std=c++11 -Wall -Wextra -O2 -static
 TARGET = kubsh
 SOURCE = main.cpp
 PREFIX = /usr
@@ -7,8 +7,9 @@ BINDIR = $(PREFIX)/bin
 DEB_NAME = kubsh
 VERSION = 1.0.0
 ARCH = amd64
+DEB_FILE = $(DEB_NAME)_$(VERSION)_$(ARCH).deb
 
-.PHONY: all build run install clean deb
+.PHONY: all build run install clean deb test
 
 all: build
 
@@ -45,7 +46,11 @@ clean:
 	rm -f $(TARGET)
 	rm -rf $(DEB_NAME)_*
 
-test: build
+test: deb
 	# Tесты
 	@echo "Testing"
-	docker run -v $(PWD)/$(TARGET):/urs/local/bin/$(TARGET) tyvik/kubsh_test:master
+	docker run -v $(PWD)/$(DEB_FILE):/tmp/kubsh.deb tyvik/kubsh_test:master
+test-src:
+	docker run -v $(PWD):/workspace tyvik/kubsh_test:master
+test-bin: build
+	docker run -v $(PWD)/$(TARGET):/usr/bin/$(TARGET) tyvik/kubsh_test:master
