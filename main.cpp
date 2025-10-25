@@ -30,8 +30,12 @@ int main() {
     if (input.empty())
     continue;
     
-    if (input.find("echo") == 0)
-      cout << input.substr(input.find("echo") + 5, input.length()) << '\n';
+    if (input.find("debug") == 0){
+      while (input.at(0) == ' ') input.erase(0, 1);
+
+      if ((input.at(0) == '"') || (input.at(0) == '\'')) {input.erase(0, 1); input.erase(input.length()-1,input.length());}
+      cout << input.substr(input.find("debug") + 5, input.length()) << '\n';
+    }
 
     else if (input.find("\\e") == 0)
     {
