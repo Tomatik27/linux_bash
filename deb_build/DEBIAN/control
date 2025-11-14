@@ -1,0 +1,5 @@
+Package: kubsh
+Version: 1.0
+Architecture: amd64
+Maintainer: epoque
+Description: Simple shell
