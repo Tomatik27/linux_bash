@@ -1,9 +1,0 @@
-$asd
-$
-$
-$asd
-$debug 123
-$debug '123'
-$/q
-$\q
-$\e $PATH
