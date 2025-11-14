@@ -2,6 +2,10 @@
 #include <fstream>
 #include <string>
 #include <cstdlib>
+#include <vector>
+#include <sstream>
+#include <unistd.h>
+#include <sys/wait.h>
 
 using namespace std;
 
@@ -83,8 +87,45 @@ int main() {
         // Неправильный формат команды
         cout << "Usage: \\e $VARIABLE" << '\n';
       }
-    } else {
-      cout << input << ": command not found" << '\n';
+    } 
+    // Обработка бинарников
+    else {
+      // Дочерний процесс
+      pid_t pid = fork();
+      
+      if (pid == 0) {
+        // Команда
+        
+        // Разбиение на аргументы
+        vector<string> args;
+        stringstream ss(input);
+        string token;
+        
+        while (ss >> token) {
+          args.push_back(token);
+        }
+        
+        // Аргументы для execvp
+        vector<char*> argv;
+        for (auto& arg : args) {  // Прогон по аргументам
+          argv.push_back(const_cast<char*>(arg.c_str()));
+        }
+        argv.push_back(nullptr); // Конец нуллом
+        
+        // Попытка выполнения
+        execvp(argv[0], argv.data());
+        
+        // Если дошли сюда - команда не найдена
+        cerr << input << ": command not found" << '\n';
+        exit(1);
+        
+      } else if (pid > 0) {
+        // Ждем дочь
+        int status;
+        waitpid(pid, &status, 0);
+      } else {
+        cerr << "Failed to create process" << '\n';
+      }
     }
     
   }
