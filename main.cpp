@@ -116,7 +116,7 @@ int main() {
         execvp(argv[0], argv.data());
         
         // Если дошли сюда - команда не найдена
-        cerr << input << ": command not found" << '\n';
+        cerr << input << ": command not found";
         exit(1);
         
       } else if (pid > 0) {
