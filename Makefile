@@ -1,56 +1,46 @@
-CXX = g++
-CXXFLAGS = -std=c++11 -Wall -Wextra -O2 -static
-TARGET = kubsh
-SOURCE = main.cpp
-PREFIX = /usr
-BINDIR = $(PREFIX)/bin
-DEB_NAME = kubsh
-VERSION = 1.0.0
-ARCH = amd64
-DEB_FILE = $(DEB_NAME)_$(VERSION)_$(ARCH).deb
+# Компилятор и флаги
+CXX := g++
+CXXFLAGS := -O2 -std=c++11
 
-.PHONY: all build run install clean deb test
+# Имя программы
+TARGET := kubsh
 
-all: build
+# Настройки пакета
+PACKAGE_NAME := $(TARGET)
+VERSION := 1.0
+ARCH := amd64
+DEB_FILENAME := kubsh.deb
 
-build:
-	$(CXX) $(CXXFLAGS) -o $(TARGET) $(SOURCE)
+# Временные директории
+BUILD_DIR := deb_build
+INSTALL_DIR := $(BUILD_DIR)/usr/local/bin
 
-run: build
-	./$(TARGET)
+.PHONY: all clean deb
 
-install: build
-	install -d $(DESTDIR)$(BINDIR)
-	install -m 755 $(TARGET) $(DESTDIR)$(BINDIR)
+all: $(TARGET)
 
-deb: build
-	mkdir -p $(DEB_NAME)_$(VERSION)_$(ARCH)/DEBIAN
-	mkdir -p $(DEB_NAME)_$(VERSION)_$(ARCH)$(BINDIR)
-	cp $(TARGET) $(DEB_NAME)_$(VERSION)_$(ARCH)$(BINDIR)/
+$(TARGET): main.cpp
+	$(CXX) $(CXXFLAGS) $< -o $@
+
+deb: $(TARGET) | $(BUILD_DIR) $(INSTALL_DIR)
+	# Копируем бинарник
+	cp $(TARGET) $(INSTALL_DIR)/
 	
-	# Создаем control файл
-	@echo "Package: $(DEB_NAME)" > $(DEB_NAME)_$(VERSION)_$(ARCH)/DEBIAN/control
-	@echo "Version: $(VERSION)" >> $(DEB_NAME)_$(VERSION)_$(ARCH)/DEBIAN/control
-	@echo "Section: utils" >> $(DEB_NAME)_$(VERSION)_$(ARCH)/DEBIAN/control
-	@echo "Priority: optional" >> $(DEB_NAME)_$(VERSION)_$(ARCH)/DEBIAN/control
-	@echo "Architecture: $(ARCH)" >> $(DEB_NAME)_$(VERSION)_$(ARCH)/DEBIAN/control
-	@echo "Depends: libc6 (>= 2.19)" >> $(DEB_NAME)_$(VERSION)_$(ARCH)/DEBIAN/control
-	@echo "Maintainer: Epoque <Tematik27@yandex.ru>" >> $(DEB_NAME)_$(VERSION)_$(ARCH)/DEBIAN/control
-	@echo "Description: KubSH" >> $(DEB_NAME)_$(VERSION)_$(ARCH)/DEBIAN/control
-	@echo "NeZnayuChtoEto: Smth for KubSH" >> $(DEB_NAME)_$(VERSION)_$(ARCH)/DEBIAN/control
+	# Создаем базовую структуру пакета
+	mkdir -p $(BUILD_DIR)/DEBIAN
 	
-	# Собираем пакет
-	dpkg-deb --build $(DEB_NAME)_$(VERSION)_$(ARCH)
+	# Генерируем контрольный файл
+	@echo "Package: $(PACKAGE_NAME)" > $(BUILD_DIR)/DEBIAN/control
+	@echo "Version: $(VERSION)" >> $(BUILD_DIR)/DEBIAN/control
+	@echo "Architecture: $(ARCH)" >> $(BUILD_DIR)/DEBIAN/control
+	@echo "Maintainer: $(USER)" >> $(BUILD_DIR)/DEBIAN/control
+	@echo "Description: Simple shell" >> $(BUILD_DIR)/DEBIAN/control
+	
+	# Собираем пакет с фиксированным именем
+	dpkg-deb --build $(BUILD_DIR) $(DEB_FILENAME)
+
+$(BUILD_DIR) $(INSTALL_DIR):
+	mkdir -p $@
 
 clean:
-	rm -f $(TARGET)
-	rm -rf $(DEB_NAME)_*
-
-test: deb
-	# Tесты
-	@echo "Testing"
-	docker run -v $(PWD)/$(DEB_FILE):/tmp/kubsh.deb tyvik/kubsh_test:master
-test-src:
-	docker run -v $(PWD):/workspace tyvik/kubsh_test:master
-test-bin: build
-	docker run -v $(PWD)/$(TARGET):/usr/bin/$(TARGET) tyvik/kubsh_test:master
+	rm -rf $(TARGET) $(BUILD_DIR) $(DEB_FILENAME)
