@@ -11,8 +11,6 @@ int main() {
 
   string hist = "kubsh_history.txt";
   ofstream F(hist, ios::app);
-  
-  cout << "$ ";
 
   string input;
   while (getline(cin, input)) {
@@ -34,7 +32,7 @@ int main() {
     
     // Обработка debug
     if (input.find("debug") == 0) {
-      input = input.substr(5); // -debug
+      input = input.substr(5); // -"debug"
       
       // Пробелы
       while (!input.empty() && input[0] == ' ') {
@@ -50,7 +48,7 @@ int main() {
       }
       cout << input << '\n';
     }
-    
+
     else if (input.find("\\e") == 0) {
       size_t pos = input.find("\\e") + 3;
 
@@ -82,7 +80,7 @@ int main() {
       cout << input << ": command not found" << '\n';
     }
     
-    cout << "$ ";
+//    cout << "$ ";
   }
   return 0;
 }
