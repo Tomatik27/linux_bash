@@ -1,6 +1,5 @@
 kub*
 deb*
-Dockerfile*
 
 !Makefile
 !main.cpp
