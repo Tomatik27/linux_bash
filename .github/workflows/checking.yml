@@ -19,13 +19,11 @@ jobs:
         repository: Tomatik27/linux_bash
 
     - name: Pull Docker image
-      run: docker pull ghcr.io/minkoalexandr/shell/kubsh_test:master
+      run: docker pull tyvik/kubsh_test:master
 
     - name: Run Docker container to build kubsh.deb
       run: |
-        docker run --rm \
-          -v $PWD:/mnt \
-          ghcr.io/minkoalexandr/shell/kubsh_test:master
+        make docker-build && make test-fast
 
     - name: Verify kubsh.deb exists
       run: |

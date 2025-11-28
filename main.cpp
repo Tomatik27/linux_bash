@@ -14,6 +14,8 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <cstdint>
+// vfs
+#include "vfs.h"
 
 using namespace std;
 
@@ -258,6 +260,8 @@ int main() {
   cout << unitbuf;
   cerr << unitbuf;
 
+  initialize_vfs();
+
   // Настройка обработчика
   setup_signal_handler();
 
@@ -326,4 +330,5 @@ int main() {
 
     cerr << "$ ";
   }
+  cleanup_vfs();
 }
