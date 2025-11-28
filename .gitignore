@@ -1,5 +1,4 @@
-kub*
-deb*
+*
 
 !Makefile
 !main.cpp
