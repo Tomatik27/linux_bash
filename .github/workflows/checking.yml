@@ -23,7 +23,7 @@ jobs:
 
     - name: Run Docker container to build kubsh.deb
       run: |
-        make docker-build && make test-fast
+        make docker-clean && make docker-build && make test-fast
 
     - name: Verify kubsh.deb exists
       run: |
