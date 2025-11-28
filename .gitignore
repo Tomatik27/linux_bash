@@ -1,0 +1,7 @@
+kub*
+deb*
+
+!Makefile
+!main.cpp
+!.git*
+!vfs*
